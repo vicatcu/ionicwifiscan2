@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>Home</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <button ion-button (click)="scan()">Scan Wi-Fi</button>
+  <button ion-button (click)="checkResults()">Check Scan Results</button>
+  <p><b>Wi-Fi Available</b>: {{wifiAvailable}}</p>
+  <p><b>Connected To</b>: {{networkName}}</p>
+  <p>
+    <b>Scan Results</b>:
+  </p>
+  <pre>
+{{ scanResults | json }}
+  </pre>
+
+</ion-content>
