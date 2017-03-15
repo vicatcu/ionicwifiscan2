@@ -5,15 +5,23 @@
 </ion-header>
 
 <ion-content padding>
-  <button ion-button (click)="scan()">Scan Wi-Fi</button>
-  <button ion-button (click)="checkResults()">Check Scan Results</button>
-  <p><b>Wi-Fi Available</b>: {{wifiAvailable}}</p>
-  <p><b>Connected To</b>: {{networkName}}</p>
-  <p>
-    <b>Scan Results</b>:
-  </p>
-  <pre>
-{{ scanResults | json }}
-  </pre>
+  <div *ngIf="wifiAvailable && locationAvailable">
+    <button ion-button (click)="scan()">Scan Wi-Fi</button>
+    <button ion-button (click)="checkResults()">Check Scan Results</button>
+    <p><b>Wi-Fi Available</b>: {{wifiAvailable}}</p>
+    <p><b>Connected To</b>: {{networkName}}</p>
+    <p>
+      <b>Scan Results</b>:
+    </p>
+    <pre>{{ scanResults | json }}</pre>
+  </div>
 
+  <div *ngIf="!locationAvailable">
+    <h2>Enable Location?</h2>
+    <div>
+      In order to Scan Wi-Fi, and place your Egg on the map,
+      you need to enable one or more location servies in Android Settings.
+    </div>
+    <button ion-button (click)="openNativeSettings()">Go To Settings</button>
+  </div>
 </ion-content>

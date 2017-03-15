@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
+import { Diagnostic } from 'ionic-native';
+import { Platform } from 'ionic-angular';
 
-declare let WifiWizard: any;
+declare var WifiWizard: any;
+declare var cordova: any;
 
 @Component({
   selector: 'page-home',
@@ -10,48 +13,87 @@ declare let WifiWizard: any;
 export class HomePage {
   networkName: string;
   wifiAvailable: boolean = false;
+  locationAvailable: boolean = false;
   scanResults: any = [];
 
-  constructor(public navCtrl: NavController) {
+  constructor(public navCtrl: NavController, public plt: Platform) {
 
   }
 
+  openNativeSettings(){
+    if(typeof cordova.plugins.settings.openSetting != undefined){
+        cordova.plugins.settings.open(function(){
+            console.log("opened settings")
+        },
+        function(){
+            console.log("failed to open settings")
+        });
+    }
+  }
+
   ionViewDidLoad(){
-    if(WifiWizard !== 'undefined'){
-      console.log(WifiWizard)
-    }
-    else {
-      console.warn('WifiWizard not loaded');
-    }
+    this.plt.ready().then(() => {
+      // Diagnostic.isLocationAuthorized()
+      //   .then((authorized) => {
+      //     console.log("isLocationAuthorized = ", authorized);
+      //   })
+      //   .then(() => {
+      //     return Diagnostic.isLocationEnabled()
+      //       .then((enabled) => {
+      //         this.locationAvailable = enabled;
+      //         console.log("isLocationEnabled = ", enabled);
+      //       });
+      //   });
 
-    // check whether wifi is enabled once a second
-    setInterval(() => {
-      if(WifiWizard){
-        let s = (status) => {
-          this.wifiAvailable = status;
-        };
-        let f = () => {
-          this.wifiAvailable = false;
-        };
-        WifiWizard.isWifiEnabled(s, f);
-      }
-    }, 1000);
+      setInterval(() => {
+        Diagnostic.isLocationEnabled()
+          .then((enabled) => {
+            this.locationAvailable = enabled;
+            console.log("isLocationEnabled = ", enabled);
+          });
+        }, 1000);
 
-    // check which network you are connected to once a second
-    setInterval(() => {
-      let ssidHandler = (ssid) => {
-        console.log(ssid);
-        this.networkName = ssid;
+
+      if(WifiWizard !== 'undefined'){
+        console.log(WifiWizard)
       }
-      let fail = (error) => {
-        this.networkName = null;
-        console.log(error);
+      else {
+        console.warn('WifiWizard not loaded');
       }
 
-      if(WifiWizard){
-        WifiWizard.getCurrentSSID(ssidHandler, fail);
-      }
-    }, 1000);
+      // check whether wifi is enabled once a second
+      setInterval(() => {
+        if(WifiWizard){
+          let s = (status) => {
+            this.wifiAvailable = status;
+            if(!this.wifiAvailable){
+              Diagnostic.setWifiState(true);
+            }
+          };
+          let f = () => {
+            this.wifiAvailable = false;
+            Diagnostic.setWifiState(true);
+          };
+          WifiWizard.isWifiEnabled(s, f);
+        }
+      }, 1000);
+
+      // check which network you are connected to once a second
+      setInterval(() => {
+        let ssidHandler = (ssid) => {
+          console.log(ssid);
+          this.networkName = ssid;
+        }
+        let fail = (error) => {
+          this.networkName = null;
+          console.log(error);
+        }
+
+        if(WifiWizard){
+          WifiWizard.getCurrentSSID(ssidHandler, fail);
+        }
+      }, 1000);
+    })
   }
 
   scan(){
